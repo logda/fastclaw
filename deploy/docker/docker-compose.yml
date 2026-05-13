@@ -21,7 +21,7 @@ services:
     ports:
       - "${FASTCLAW_PORT:-18953}:18953"
     volumes:
-      - fastclaw-data:/data/.fastclaw
+      - /tmp/fastclaw-data:/data/.fastclaw
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       # FASTCLAW_HOME — sqlite db path + sandbox root + skill cache live here
