@@ -16,15 +16,13 @@
 ##
 services:
   fastclaw:
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-    image: fastclaw/fastclaw:latest
+    image: fastclaw/fastclaw:${FASTCLAW_TAG:-latest}
     restart: unless-stopped
     ports:
       - "${FASTCLAW_PORT:-18953}:18953"
     volumes:
       - fastclaw-data:/data/.fastclaw
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       # FASTCLAW_HOME — sqlite db path + sandbox root + skill cache live here
       FASTCLAW_HOME: /data/.fastclaw
@@ -36,10 +34,10 @@ services:
       FASTCLAW_STORAGE_TYPE: postgres
       FASTCLAW_STORAGE_DSN: "postgres://fastclaw:${POSTGRES_PASSWORD:-fastclaw-secret}@postgres:5432/fastclaw?sslmode=disable"
       FASTCLAW_STORAGE_AUTO_MIGRATE: "true"
-      # Sandbox (optional; uncomment to enable)
-      # FASTCLAW_SANDBOX_ENABLED: "true"
-      # FASTCLAW_SANDBOX_BACKEND: docker
-      # FASTCLAW_SANDBOX_IMAGE: python:3.12-slim
+      # Sandbox (Docker backend, requires docker.sock mount above)
+      FASTCLAW_SANDBOX_ENABLED: "true"
+      FASTCLAW_SANDBOX_BACKEND: docker
+      FASTCLAW_SANDBOX_IMAGE: thinkany/fastclaw-sandbox:${SANDBOX_TAG:-latest}
     depends_on:
       postgres:
         condition: service_healthy

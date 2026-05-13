@@ -4,7 +4,6 @@ tmp/
 web/node_modules/
 web/.next/
 web/out/
-internal/setup/web/
 .git/
 *.tar.gz
 *.zip

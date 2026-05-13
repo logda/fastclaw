@@ -85,9 +85,10 @@ build-docker: build-web bundle-skills
 	@echo "Platform: ${PLATFORM}"
 	docker buildx build \
 		--platform "${PLATFORM}" \
+		--build-arg VERSION="${VERSION}" \
+		--build-arg COMMIT="${COMMIT}" \
 		--load \
 		-t "${IMAGE_NAME}:${IMAGE_TAG}" \
-		-f Dockerfile.local \
 		.
 	@echo "✅ Build complete!"
 	@echo "   Image: ${IMAGE_NAME}:${IMAGE_TAG}"
