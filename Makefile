@@ -1,4 +1,4 @@
-.PHONY: build build-web bundle-skills clean release-local install test dev
+.PHONY: build build-web bundle-skills clean release-local install test dev build-docker
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT  ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -17,6 +17,10 @@ LDFLAGS  = -s -w \
 #   make install PREFIX=/usr/local        (system-wide; needs sudo)
 #   make install PREFIX=/opt/homebrew     (Apple Silicon brew layout)
 PREFIX ?= $(HOME)/.local
+
+IMAGE_NAME ?= fastclaw/fastclaw
+IMAGE_TAG ?= $(shell date +%m%d)
+PLATFORM ?= linux/amd64
 
 build-web:
 	cd web && pnpm install --frozen-lockfile && pnpm build
@@ -75,3 +79,17 @@ release-local: build-web bundle-skills
 	@cd dist && for d in fastclaw_windows_*; do (cd "$$d" && zip -q "../$${d}.zip" fastclaw.exe); done
 	@echo "Release artifacts:"
 	@ls -lh dist/*.tar.gz dist/*.zip 2>/dev/null
+
+build-docker: build-web bundle-skills
+	@echo "=== Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG} ==="
+	@echo "Platform: ${PLATFORM}"
+	docker buildx build \
+		--platform "${PLATFORM}" \
+		--load \
+		-t "${IMAGE_NAME}:${IMAGE_TAG}" \
+		-f Dockerfile.local \
+		.
+	@echo "✅ Build complete!"
+	@echo "   Image: ${IMAGE_NAME}:${IMAGE_TAG}"
+	@echo "To run:"
+	@echo "  docker run --rm -p 18953:18953 ${IMAGE_NAME}:${IMAGE_TAG}"
